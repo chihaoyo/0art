@@ -218,7 +218,7 @@ _f.child('elements').on('value', function(s) {
 });
 
 $control = $('#control');
-$nodeTypeSwitch = $('<div id="nodeTypeSwitch">').appendTo($control);
+$nodeTypeSwitch = $control.find('#nodeTypeSwitch');
 for(n in NTYPES) {
   var classes = 'nodeType ' + NTYPES[n];
   $('<div>').html('<label>' + n + '</label>')
@@ -226,6 +226,9 @@ for(n in NTYPES) {
     .appendTo($nodeTypeSwitch)
     .click(function() { $(this).addClass('active').siblings().removeClass('active'); });
 }
-
+$control.find('#addNode').click(function() {
+  $nodeTypeSwitch.toggleClass('warning');
+  return false;
+});
 
 }); // on dom ready
