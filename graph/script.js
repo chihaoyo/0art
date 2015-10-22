@@ -123,7 +123,7 @@ var fontSize = 11;
 var fontWeight = 300;
 var defaultColor = '#aaa';
 var highlightColor = 'black';
-var defaultOpacity = 0.5;
+var defaultOpacity = 0.25;
 var highlightOpacity = 1.0;
 var styles = [
   {
@@ -161,7 +161,7 @@ var styles = [
       'edge-text-rotation': 'autorotate',
       'line-color': defaultColor,
       'target-arrow-color': defaultColor,
-      'target-arrow-shape': 'triangle',
+      'target-arrow-shape': 'none',
       'font-family': fontFamily,
       'font-size': fontSize,
       'font-weight': fontWeight,
@@ -208,7 +208,7 @@ cy = cytoscape({
 _f = new Firebase('https://0art.firebaseio.com/');
 _f.child('elements').on('child_added', function(s) {
   var element = s.val();
-  console.log('child_added', element);
+  //console.log('child_added', element);
   if(cy.$('[id="' + element.data.id + '"]').length <= 0) // use [id="elementID"] to make Unicode id work
     cy.add(element);
 });
@@ -220,14 +220,26 @@ _f.child('elements').on('value', function(s) {
 $control = $('#control');
 $nodeTypeSwitch = $control.find('#nodeTypeSwitch');
 for(n in NTYPES) {
-  var classes = 'nodeType ' + NTYPES[n];
   $('<div>').html('<label>' + n + '</label>')
-    .addClass(classes).css({backgroundColor: NCOLORS[n].background, color: NCOLORS[n].text})
+    .addClass('nodeType').attr('type', NTYPES[n]).css({backgroundColor: NCOLORS[n].background, color: NCOLORS[n].text})
     .appendTo($nodeTypeSwitch)
     .click(function() { $(this).addClass('active').siblings().removeClass('active'); });
 }
+$form = $control.find('form');
+$nodeNameField = $control.find('#nodeID');
 $control.find('#addNode').click(function() {
-  $nodeTypeSwitch.toggleClass('warning');
+  var nodeName = $nodeNameField.val();
+  var nodeType = $nodeTypeSwitch.find('.nodeType.active').attr('type');
+  var nodeNameOK = (nodeName != '');
+  var nodeTypeOK = (nodeType !== undefined && nodeType != '');
+
+  $nodeTypeSwitch.toggleClass('warning', !nodeTypeOK);
+  $form.toggleClass('warning', !nodeNameOK);
+
+  if(nodeNameOK && nodeTypeOK) {
+    console.log('add', nodeName, nodeType);
+    addNode(nodeName, nodeType);
+  }
   return false;
 });
 

@@ -38,25 +38,31 @@ $controlHeight: 45px;
   height: $controlHeight;
   width: 100%;
   background: #aaa;
-  
+
+  $warningOutline: 3px solid transparent;
+  $warningColor: black;
+  @mixin warningText {
+    display: block;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, -4px);
+    font-size: $defaultFontSize;
+    color: $warningColor;
+  }
+
   > #nodeTypeSwitch {
     display: inline-block;
     vertical-align: middle;
     font-size: 0;
-    outline: 3px solid transparent;
+    outline: $warningOutline;
 
     &.warning {
-      outline-color: black;
+      outline-color: $warningColor;
 
       &:before {
         content: 'Select Type of Node';
-        display: block;
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translate(-50%, -4px);
-        font-size: $defaultFontSize;
-        color: black;
+        @include warningText;
       }
     }
 
@@ -88,18 +94,29 @@ $controlHeight: 45px;
   > form {
     display: inline-block;
     vertical-align: middle;
+    position: relative;
     margin-left: 10px;
+    padding: 10px;
+    outline: $warningOutline;
+
+    &.warning {
+      outline-color: $warningColor;
+      &:before {
+        content: 'Input Name of Node';
+        @include warningText;
+      }
+    }
   }
 }
 
 input[type="text"] {
   outline: none;
   border: none;
-  padding: 4px;
-  opacity: 0.5;
+  padding: 4px 4px 3px;
+  background-color: rgba(white, 0.5);
 
   &:focus {
     outline: none;
-    opacity: 1;
+    background-color: white;
   }
 }
