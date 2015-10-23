@@ -4,28 +4,24 @@ function guidGenerator() {
   };
   return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 };
-// live at http://jsbin.com/wahuto/6/edit?js,output -- 2015/10/21
-var NTYPES = {
-  person: 'person',
-  organization: 'organization',
-  project: 'project',
-  document: 'document',
-  event: 'event',
+// 節點的種類
+var NODETYPES = {
+  person: { label: '人', colors: {text: 'blue', background: 'aqua'} },
+  organization: { label: '組織', colors: {text: 'aqua', background: 'blue'} },
+  project: { label: '坑', colors: {text: 'blue', background: 'lime'} },
+  document: { label: '文件', colors: {text: 'black', background: 'grey'} },
+  event: { label: '事件', colors: {text: 'blue', background: 'yellow'} },
 };
-var NCOLORS = {
-  person: {text: 'blue', background: 'aqua'},
-  organization: {text: 'aqua', background: 'blue'},
-  project: {text: 'blue', background: 'lime'},
-  document: {text: 'black', background: 'grey'},
-  event: {text: 'blue', background: 'yellow'},
-};
-var ETYPES = {
-  contribute: '貢獻',
-  participate: '參與',
-  attend: '出席',
-  host: '主辦',
+// 連結的種類
+var EDGETYPES = {
+  contribute: { label: '貢獻', source: 'person', target: 'project' },
+  participate: { label: '參與', source: 'person', target: 'organization' },
+  attend: { label: '出席', source: 'person', target: 'event' },
+  compose: { label: '撰寫', source: 'person', target: 'document' },
+  generate: { label: '產生', source: 'project', target: 'document' },
 };
 
+// 資料庫
 var addNode = function(id, type, parent) {
   if(cy.$('node[id="' + id + '"]').length > 0)
     return -1; // check for duplicates
@@ -44,71 +40,24 @@ var addEdge = function(source, target, label) {
   });
 };
 
-var addPerson = function() { // personID [organizationID...]
-  var args = [].slice.call(arguments);
-  var personID = args.shift();
-  addNode(personID, NTYPES.person);
-  for(i in args) {
-    var organizationID = args[i];
-    addOrganization(organizationID);
-    addParticipate(personID, organizationID);
-  }
-};
-var addOrganization = function() { // organizationID [personID...]
-  var args = [].slice.call(arguments);
-  var organizationID = args.shift();
-  addNode(organizationID, NTYPES.organization);
-  for(i in args) {
-    var personID = args[i];
-    addPerson(personID);
-    addParticipate(personID, organizationID);
-  }
-};
-var addParticipate = function(source, target) {
-  addPerson(source);
-  addOrganization(target);
-  addEdge(source, target, ETYPES.participate);
-};
+// 建立多對多的連結
+/*
+[person] contribute [project]
+[person] participate [organization]
+[person] attend [event]
+[person] compose [document]
+[project] generate [document]
+*/
+var connectDir = function(type0, idList0, label, type1, idList1) {
+  for(i in idList0) {
+    for(j in idList1) {
+      var id0 = idList0[i];
+      var id1 = idList1[j];
 
-var addProject = function() { // projectID [personID...]
-  var args = [].slice.call(arguments);
-  var projectID = args.shift();
-  addNode(projectID, NTYPES.project);
-  for(i in args) {
-    var personID = args[i];
-    addPerson(personID);
-    addContribute(personID, projectID);
-  }
-};
-var addContribute = function() { // personID projectID [projectID...]
-  var args = [].slice.call(arguments);
-  var source = args.shift();
-  addPerson(source);
-  for(i in args) {
-    var target = args[i];
-    addProject(target);
-    addEdge(source, target, ETYPES.contribute);
-  }
-};
-
-var addEvent = function() { // eventID [personID...]
-  var args = [].slice.call(arguments);
-  var eventID = args.shift();
-  addNode(projectID, NTYPES.event);
-  for(i in args) {
-    var personID = args[i];
-    addPerson(personID);
-    addAttend(personID, eventID);
-  }
-};
-var addAttend = function() { // personID [eventID...]
-  var args = [].slice.call(arguments);
-  var personID = args.shift();
-  addPerson(personID);
-  for(i in args) {
-    var eventID = args[i];
-    addEvent(eventID);
-    addEdge(personID, eventID, ETYPES.attend);
+      addNode(id0, type0)
+      addNode(id1, type1);
+      addEdge(id0, id1, label);
+    }
   }
 };
 
@@ -176,20 +125,21 @@ var styles = [
     }
   }
 ];
-for(n in NTYPES) {
+// 每一種不同節點以不同顏色表示
+for(type in NODETYPES) {
   styles.push({
-    selector: 'node.' + NTYPES[n],
+    selector: 'node.' + type,
     css: {
-      'color': NCOLORS[n].text,
-      'background-color': NCOLORS[n].background,
+      'color': NODETYPES[type].colors.text,
+      'background-color': NODETYPES[type].colors.background,
     },
   });
 };
 
 var cy;
-var $control;
-$(function(){ // on dom ready
+$(function(){ // start on-dom-ready
 
+// initialize graph
 cy = cytoscape({
   container: document.getElementById('cy'),
   style: styles,
@@ -205,6 +155,7 @@ cy = cytoscape({
   wheelSensitivity: -1,
 });
 
+// connect to Firebase
 _f = new Firebase('https://0art.firebaseio.com/');
 _f.child('elements').on('child_added', function(s) {
   var element = s.val();
@@ -217,30 +168,57 @@ _f.child('elements').on('value', function(s) {
   cy.layout();
 });
 
-$control = $('#control');
-$nodeTypeSwitch = $control.find('#nodeTypeSwitch');
-for(n in NTYPES) {
-  $('<div>').html('<label>' + n + '</label>')
-    .addClass('nodeType').attr('type', NTYPES[n]).css({backgroundColor: NCOLORS[n].background, color: NCOLORS[n].text})
-    .appendTo($nodeTypeSwitch)
-    .click(function() { $(this).addClass('active').siblings().removeClass('active'); });
+// configure interface
+// make control draggable
+var $control = $('#control').draggabilly();
+
+// build legend
+var $legend = $('#legend');
+for(type in NODETYPES) {
+  $('<div>').html('<label>' + NODETYPES[type].label + '</label>')
+    .addClass('nodeType').attr('type', type).css({backgroundColor: NODETYPES[type].colors.background, color: NODETYPES[type].colors.text})
+    .appendTo($legend);
 }
-$form = $control.find('form');
-$nodeNameField = $control.find('#nodeID');
-$control.find('#addNode').click(function() {
-  var nodeName = $nodeNameField.val();
-  var nodeType = $nodeTypeSwitch.find('.nodeType.active').attr('type');
-  var nodeNameOK = (nodeName != '');
-  var nodeTypeOK = (nodeType !== undefined && nodeType != '');
 
-  $nodeTypeSwitch.toggleClass('warning', !nodeTypeOK);
-  $form.toggleClass('warning', !nodeNameOK);
+// make interface to create new nodes and connect them
+// #connect
+var $toConnect = $('#connect');
+var $textInputBoxes = $toConnect.find('input[type="text"]').on('mousedown mouseup mousemove', function(event) {event.stopPropagation();});
+var $idList0 = $toConnect.find('[name="idList0"]');
+var $idList1 = $toConnect.find('[name="idList1"]');
+var $edgeType = $toConnect.find('[name="edgeType"]');
+for(type in EDGETYPES) {
+  $('<option>').text(EDGETYPES[type].label).attr('value', type).appendTo($edgeType);
+}
+$edgeType.change(function() {
+  // 根據不同的連結種類提示不同的接點種類
+  var type = $edgeType.val();
+  var sourceLabel = NODETYPES[EDGETYPES[type].source].label;
+  var targetLabel = NODETYPES[EDGETYPES[type].target].label;
+  $idList0.attr('placeholder', [sourceLabel,sourceLabel,sourceLabel].join(',')+'⋯');
+  $idList1.attr('placeholder', [targetLabel,targetLabel,targetLabel].join(',')+'⋯');
+});
+$edgeType.change();
 
-  if(nodeNameOK && nodeTypeOK) {
-    console.log('add', nodeName, nodeType);
-    addNode(nodeName, nodeType);
-  }
+var inputFilter = function(input) { return input; }; // eliminate empty elments
+var inputEditor = function(input) { // format input
+  return input.replace(/\s+/g, '_'); // replace whitespaces to underscores
+};
+var $connect = $toConnect.find('[name="connect"]').click(function() {
+  var idList0 = $idList0.val().trim().split(/\s*,\s*/).filter(inputFilter).map(inputEditor);
+  var idList1 = $idList1.val().trim().split(/\s*,\s*/).filter(inputFilter).map(inputEditor);
+  var edgeType = $edgeType.val();
+  var type0 = EDGETYPES[edgeType].source;
+  var type1 = EDGETYPES[edgeType].target;
+  var label = EDGETYPES[edgeType].label;
+  console.log(type0, idList0, label, type1, idList1);
+  connectDir(type0, idList0, label, type1, idList1);
   return false;
 });
+var $clear = $toConnect.find('[name="clear"]').click(function() {
+  $textInputBoxes.val('');
+  $edgeType[0].selectedIndex = 0;
+  $edgeType.change();
+});
 
-}); // on dom ready
+}); // end on-dom-ready

@@ -7,21 +7,24 @@
   <title>CytoscapeTest</title>
   <link href="css/styles.css" rel="stylesheet" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-  <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
   <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/draggabilly/1.2.0/draggabilly.pkgd.min.js"></script>
+  <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
   <script src="script.js"></script>
 </head>
 <body>
   <div id="wrap">
     <div id="cy"></div>
-    <div id="control">
-      <div id="nodeTypeSwitch">
-      </div>
-      <form>
-        <input type="text" id="nodeID" placeholder="Input Name of Node"/>
-        <input type="submit" id="addNode" value="Add Node"/>
-      </form>
-    </div>
+  </div>
+  <div id="control">
+    <div id="legend"></div>
+    <form id="connect">
+      <input type="text" name="idList0" placeholder="n0,n1,n2..."/>
+      <select type="text" name="edgeType"></select>
+      <input type="text" name="idList1" placeholder="n0,n1,n2..."/>
+      <input type="submit" name="connect" value="建立連結"/>
+      <input type="button" name="clear" value="清除"/>
+    </form>
   </div>
 </body>
 </html>
