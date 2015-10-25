@@ -47,7 +47,6 @@ $controlHeight: 45px;
       height: 32px;
       margin: 10px;
       border-radius: 50%;
-      cursor: pointer;
       font-size: $defaultFontSize;
       text-align: center;
 
@@ -57,7 +56,6 @@ $controlHeight: 45px;
         left: 50%;
         transform: translate(-50%, -50%);
         white-space: nowrap;
-        cursor: pointer;
       }
     }
   }
@@ -76,9 +74,9 @@ $controlHeight: 45px;
 
   #connect {
     display: block;
-    vertical-align: middle;
     position: relative;
-    padding: 10px;
+    margin: 10px;
+    /*
     outline: $warningOutline;
 
     &.warning {
@@ -87,6 +85,36 @@ $controlHeight: 45px;
         content: 'Input Name of Node';
         @include warningText;
       }
+    }*/
+  }
+  #change {
+    display: block;
+    position: relative;
+    margin: 10px;
+  }
+
+  #toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    &:before {
+      content: '隱藏工具箱';
+      display: block;
+      padding: 4px 8px;
+      color: blue;
+      cursor: pointer;
+    }
+  }
+}
+#control.hidden {
+  >:not(#toggle) {
+    display: none;
+  }
+  #toggle {
+    position: relative;
+    &:before {
+      content: '顯示工具箱';
     }
   }
 }

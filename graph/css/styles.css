@@ -1,3 +1,4 @@
+@charset "UTF-8";
 body, input {
   font-size: 13px;
   font-family: "PingFang TC", "Helvetica Neue", Helvetica, Arial, sans-serif; }
@@ -43,7 +44,6 @@ div {
       height: 32px;
       margin: 10px;
       border-radius: 50%;
-      cursor: pointer;
       font-size: 13px;
       text-align: center; }
       #control #legend .nodeType label {
@@ -51,25 +51,42 @@ div {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        white-space: nowrap;
-        cursor: pointer; }
+        white-space: nowrap; }
   #control #connect {
     display: block;
-    vertical-align: middle;
     position: relative;
-    padding: 10px;
-    outline: 3px solid transparent; }
-    #control #connect.warning {
-      outline-color: black; }
-      #control #connect.warning:before {
+    margin: 10px;
+    /*
+    outline: $warningOutline;
+
+    &.warning {
+      outline-color: $warningColor;
+      &:before {
         content: 'Input Name of Node';
-        display: block;
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translate(-50%, -4px);
-        font-size: 13px;
-        color: black; }
+        @include warningText;
+      }
+    }*/ }
+  #control #change {
+    display: block;
+    position: relative;
+    margin: 10px; }
+  #control #toggle {
+    position: absolute;
+    top: 0;
+    right: 0; }
+    #control #toggle:before {
+      content: '隱藏工具箱';
+      display: block;
+      padding: 4px 8px;
+      color: blue;
+      cursor: pointer; }
+
+#control.hidden > :not(#toggle) {
+  display: none; }
+#control.hidden #toggle {
+  position: relative; }
+  #control.hidden #toggle:before {
+    content: '顯示工具箱'; }
 
 input[type="text"] {
   outline: none;

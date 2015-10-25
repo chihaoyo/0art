@@ -49,16 +49,13 @@ var addEdge = function(source, target, label) {
 [project] generate [document]
 */
 var connectDir = function(type0, idList0, label, type1, idList1) {
-  for(i in idList0) {
-    for(j in idList1) {
-      var id0 = idList0[i];
-      var id1 = idList1[j];
-
-      addNode(id0, type0)
-      addNode(id1, type1);
-      addEdge(id0, id1, label);
-    }
-  }
+  for(i in idList0)
+    addNode(idList0[i], type0);
+  for(j in idList1)
+    addNode(idList1[j], type1);
+  for(i in idList0)
+    for(j in idList1)
+      addEdge(idList0[i], idList1[j], label);
 };
 
 // graph data
@@ -106,7 +103,7 @@ var styles = [
   {
     selector: 'edge',
     css: {
-      'content': 'data(label)',
+      //'content': 'data(label)',
       'edge-text-rotation': 'autorotate',
       'line-color': defaultColor,
       'target-arrow-color': defaultColor,
@@ -150,6 +147,10 @@ cy = cytoscape({
   layout: {
     name: 'cose',
     padding: 25,
+    //nodeRepulsion: 1000000,
+    //nodeOverlap: 5,
+    EdgeElasticity: 10000,
+    gravity: 500,
   },
   pixelRatio: 2,
   wheelSensitivity: -1,
@@ -171,6 +172,11 @@ _f.child('elements').on('value', function(s) {
 // configure interface
 // make control draggable
 var $control = $('#control').draggabilly();
+var $toggle = $control.find('#toggle').click(function() {
+  $control.toggleClass('hidden');
+});
+// make text boxes not draggable to preserve text selection with mouse
+$control.find('input[type="text"]').on('mousedown mouseup mousemove', function(event) {event.stopPropagation();});
 
 // build legend
 var $legend = $('#legend');
@@ -183,7 +189,7 @@ for(type in NODETYPES) {
 // make interface to create new nodes and connect them
 // #connect
 var $toConnect = $('#connect');
-var $textInputBoxes = $toConnect.find('input[type="text"]').on('mousedown mouseup mousemove', function(event) {event.stopPropagation();});
+//var $textInputBoxes = $toConnect.find('input[type="text"]');
 var $idList0 = $toConnect.find('[name="idList0"]');
 var $idList1 = $toConnect.find('[name="idList1"]');
 var $edgeType = $toConnect.find('[name="edgeType"]');
@@ -201,12 +207,13 @@ $edgeType.change(function() {
 $edgeType.change();
 
 var inputFilter = function(input) { return input; }; // eliminate empty elments
+/*
 var inputEditor = function(input) { // format input
   return input.replace(/\s+/g, '_'); // replace whitespaces to underscores
-};
+};*/
 var $connect = $toConnect.find('[name="connect"]').click(function() {
-  var idList0 = $idList0.val().trim().split(/\s*,\s*/).filter(inputFilter).map(inputEditor);
-  var idList1 = $idList1.val().trim().split(/\s*,\s*/).filter(inputFilter).map(inputEditor);
+  var idList0 = $idList0.val().trim().split(/\s*,\s*/).filter(inputFilter); //.map(inputEditor);
+  var idList1 = $idList1.val().trim().split(/\s*,\s*/).filter(inputFilter); //.map(inputEditor);
   var edgeType = $edgeType.val();
   var type0 = EDGETYPES[edgeType].source;
   var type1 = EDGETYPES[edgeType].target;
@@ -216,9 +223,25 @@ var $connect = $toConnect.find('[name="connect"]').click(function() {
   return false;
 });
 var $clear = $toConnect.find('[name="clear"]').click(function() {
-  $textInputBoxes.val('');
+  $idList0[0].value = '';
+  $idList1[0].value = '';
   $edgeType[0].selectedIndex = 0;
   $edgeType.change();
+});
+
+var $toChange = $('#change');
+var $changeTextBox = $toChange.find('[name="text"]');
+var changeElement;
+cy.on('select', function(event) {
+  changeElement = event.cyTarget;
+  $changeTextBox.val(changeElement.isNode() ? changeElement.id() : changeElement.data('label'));
+});
+cy.on('unselect', function() {
+  changeElement = null;
+  $changeTextBox.val('');
+});
+var $change = $toChange.find('[name="change"]').click(function() {
+  return false;
 });
 
 }); // end on-dom-ready
