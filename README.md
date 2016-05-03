@@ -1,5 +1,4 @@
-0art
-=====
+# 0art
 
 Code, text, and design by 0art.
 
