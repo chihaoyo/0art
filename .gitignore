@@ -1,3 +1,5 @@
 *.ai
 *.psd
+*.psb
+*.tif
 .sass-cache
