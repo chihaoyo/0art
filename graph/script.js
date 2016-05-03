@@ -23,7 +23,8 @@ var EDGETYPES = {
 
 // 資料庫
 var addNode = function(id, type, parent) {
-  if(cy.$('node[id="' + id + '"]').length > 0)
+  var check = cy.$('node[id="' + id + '"]');
+  if(check && check.length > 0)
     return -1; // check for duplicates
   _f.child('elements').push({
     group: 'nodes',
@@ -32,7 +33,8 @@ var addNode = function(id, type, parent) {
   });
 };
 var addEdge = function(source, target, label) {
-  if(cy.$('edge[source="' + source + '"][target="' + target+ '"][label="' + label + '"]').length > 0)
+  var check = cy.$('edge[source="' + source + '"][target="' + target+ '"][label="' + label + '"]');
+  if(check && check.length > 0)
     return -1; // check for duplicates
   _f.child('elements').push({
     group: 'edges',
@@ -161,11 +163,13 @@ _f = new Firebase('https://0art.firebaseio.com/');
 _f.child('elements').on('child_added', function(s) {
   var element = s.val();
   //console.log('child_added', element);
-  if(cy.$('[id="' + element.data.id + '"]').length <= 0) // use [id="elementID"] to make Unicode id work
+  var check = cy.$('[id="' + element.data.id + '"]');
+  if(check && check.length <= 0) // use [id="elementID"] to make Unicode id work
     cy.add(element);
 });
 _f.child('elements').on('value', function(s) {
   console.log('value');
+  //console.log(s.val());
   cy.layout();
 });
 
