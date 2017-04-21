@@ -47,4 +47,4 @@ Code, text, and design by 0art.
 - 510
 - 采容
 - 志維
-⋯
+- ⋯
